@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservas de Pistas · Pádel Buñol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azul:#2578D2; --azul-osc:#0F3E78; --azul-noche:#0A2246; --azul-claro:#E8F1FC;
+    --verde:#1FA86B; --gris:#5B6B80; --linea:#DCE5F0;
+    --fondo:#F4F7FB; --blanco:#fff; --texto:#0E1B2C; --rojo:#D2393B;
+    --oro:#C9971C; --oro-bg:#FBF3DC; --plata:#7D8A9A; --plata-bg:#EEF1F5; --bronce:#A9612F; --bronce-bg:#F8EADF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Barlow',system-ui,sans-serif;background:var(--fondo);color:var(--texto);min-height:100vh}
+  header{background:linear-gradient(135deg,var(--azul-noche) 0%,var(--azul-osc) 45%,var(--azul) 100%);color:#fff;padding:32px 16px 72px;text-align:center;position:relative;overflow:hidden}
+  header::after{content:"";position:absolute;inset:auto -10% -60px -10%;height:120px;background:var(--fondo);border-radius:50% 50% 0 0}
+  header small{font-weight:600;letter-spacing:.18em;text-transform:uppercase;opacity:.8;font-size:12px}
+  header h1{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(44px,10vw,72px);line-height:.95;letter-spacing:.02em;margin-top:6px}
+  header p{opacity:.85;margin-top:8px;font-size:15px}
+  main{max-width:760px;margin:-40px auto 0;padding:0 16px 48px;position:relative;z-index:1}
+  .reglas{background:var(--blanco);border-radius:16px;padding:16px 18px;box-shadow:0 6px 24px rgba(15,62,120,.08);display:flex;gap:18px;flex-wrap:wrap;justify-content:space-around;font-size:14px;color:var(--gris)}
+  .reglas b{display:block;font-family:'Bebas Neue';font-size:26px;font-weight:400;color:var(--azul);line-height:1}
+  .reglas div{text-align:center;flex:1;min-width:120px}
+  .filtros{display:flex;gap:8px;margin:22px 0 6px;flex-wrap:wrap;align-items:center}
+  .filtros button{border:1.5px solid var(--linea);background:var(--blanco);padding:8px 16px;border-radius:999px;font:600 14px 'Barlow';color:var(--gris);cursor:pointer}
+  .filtros button.on{background:var(--azul);border-color:var(--azul);color:#fff}
+  .filtros select{margin-left:auto;border:1.5px solid var(--linea);background:var(--blanco);padding:8px 12px;border-radius:999px;font:600 14px 'Barlow';color:var(--gris)}
+  .dia{font-family:'Bebas Neue';font-size:28px;letter-spacing:.03em;color:var(--azul-osc);margin:26px 0 10px;display:flex;align-items:baseline;gap:10px}
+  .dia span{font-family:'Barlow';font-size:13px;color:var(--gris);font-weight:500;letter-spacing:0}
+  .slot{background:var(--blanco);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(15,62,120,.05)}
+  .hora{min-width:82px;text-align:center;border-right:1.5px solid var(--linea);padding-right:14px;align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+  .hora b{font-family:'Bebas Neue';font-size:30px;font-weight:400;line-height:1;display:block}
+  .hora small{color:var(--gris);font-size:13px}
+  .info{flex:1;min-width:0}
+  .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pista{font-size:13px;font-weight:600;color:var(--azul);text-transform:uppercase;letter-spacing:.06em}
+  .badge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:999px}
+  .g-oro{background:var(--oro-bg);color:var(--oro)} .g-plata{background:var(--plata-bg);color:var(--plata)} .g-bronce{background:var(--bronce-bg);color:var(--bronce)}
+  .estado{font-weight:600;margin-top:2px;color:var(--verde)}
+  .partido{margin-top:6px;font-size:14.5px;line-height:1.35}
+  .pareja{font-weight:600}
+  .vs{font-family:'Bebas Neue';color:var(--azul);font-size:17px;display:block;margin:1px 0}
+  .btn{background:var(--azul);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:700 14px 'Barlow';cursor:pointer;white-space:nowrap}
+  .btn:hover{background:var(--azul-osc)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .vacio,.cargando{text-align:center;color:var(--gris);padding:48px 16px}
+  .aviso-demo{background:#FFF6DD;border:1px solid #F1D98A;color:#7A5B00;border-radius:12px;padding:10px 14px;font-size:14px;margin-top:16px}
+
+  /* Modal */
+  .modal{position:fixed;inset:0;background:rgba(10,34,70,.55);display:none;align-items:flex-end;justify-content:center;z-index:10}
+  .modal.open{display:flex}
+  .hoja{background:var(--blanco);width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:22px 18px 26px;max-height:92vh;overflow:auto}
+  @media(min-width:600px){.modal{align-items:center}.hoja{border-radius:20px}}
+  .hoja h2{font-family:'Bebas Neue';font-weight:400;font-size:34px;color:var(--azul-osc);line-height:1}
+  .hoja .sub{color:var(--gris);margin:4px 0 16px}
+  .paso{font-family:'Bebas Neue';font-size:20px;color:var(--azul);margin:14px 0 8px}
+  .grupos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .grupos button{border:1.5px solid var(--linea);background:var(--blanco);border-radius:12px;padding:10px 4px;font:700 14px 'Barlow';cursor:pointer;color:var(--gris)}
+  .grupos button.on{border-color:var(--azul);background:var(--azul-claro);color:var(--azul-osc)}
+  select.sel{width:100%;padding:12px;border:1.5px solid var(--linea);border-radius:10px;font:500 16px 'Barlow';color:var(--texto);background:var(--blanco)}
+  select.sel:focus{outline:none;border-color:var(--azul)}
+  select.sel:disabled{background:var(--fondo);color:var(--gris)}
+  .vsmodal{text-align:center;font-family:'Bebas Neue';color:var(--azul);font-size:22px;margin:8px 0}
+  .error{color:var(--rojo);font-weight:600;font-size:14px;min-height:20px;margin:10px 0 6px}
+  .acciones{display:flex;gap:10px;margin-top:6px}
+  .acciones .btn{flex:1;padding:13px}
+  .btn.sec{background:var(--fondo);color:var(--gris)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(120px);background:var(--verde);color:#fff;padding:12px 20px;border-radius:999px;font-weight:600;transition:transform .3s;z-index:20}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  footer{text-align:center;color:var(--gris);font-size:13px;padding-bottom:28px}
+</style>
+</head>
+<body>
+<header>
+  <small>Asociación de Pádel de Buñol</small>
+  <h1>Reserva de pistas</h1>
+  <p>Liga Otoño-Invierno · Elige rival y reserva tu horario</p>
+</header>
+
+<main>
+  <div class="reglas">
+    <div><b>2 parejas</b>Del mismo grupo</div>
+    <div><b>1 por semana</b>Cada pareja, de lunes a domingo</div>
+    <div><b>Solo la liga</b>Parejas inscritas</div>
+  </div>
+  <div id="demo"></div>
+  <div class="filtros">
+    <button class="on" data-f="todas">Todas</button>
+    <button data-f="libres">Libres</button>
+    <button data-f="ocupadas">Partidas</button>
+    <select id="filtroGrupo" aria-label="Filtrar por grupo"><option value="">Todos los grupos</option></select>
+  </div>
+  <div id="lista"><div class="cargando">Cargando horarios…</div></div>
+</main>
+<footer>¿Necesitas anular una reserva? Habla con la junta.</footer>
+
+<div class="modal" id="modal">
+  <form class="hoja" id="form">
+    <h2>Reservar pista</h2>
+    <p class="sub" id="sub"></p>
+    <div class="paso">1 · Grupo</div>
+    <div class="grupos" id="grupos"></div>
+    <div class="paso">2 · Partido</div>
+    <select class="sel" id="p1" disabled><option value="">Elige primero el grupo</option></select>
+    <div class="vsmodal">vs</div>
+    <select class="sel" id="p2" disabled><option value="">Elige primero el grupo</option></select>
+    <div class="error" id="error"></div>
+    <div class="acciones">
+      <button type="button" class="btn sec" id="cancelar">Cancelar</button>
+      <button type="submit" class="btn" id="enviar">Confirmar reserva</button>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast">¡Pista reservada!</div>
+
+<script>
+// ==== CONFIGURACIÓN: pega aquí la URL de tu Apps Script (termina en /exec) ====
+const API_URL = 'https://script.google.com/macros/s/AKfycbxu-tNGUWlUiOzfDV1D3FoamEnAwgX0dLQPk6RaNMSYy9apm3cYvm6btY83VROWgLF3/exec';
+
+let estado = { grupos: [], parejas: [], horarios: [] };
+let filtro = 'todas', filtroGrupo = '';
+let actual = null, grupoSel = '';
+const $ = s => document.querySelector(s);
+const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+// --- Datos de ejemplo (solo si no hay API_URL configurada) ---
+function demo() {
+  const P = [
+    ['O1','Oro','Rafael Femenia Penalba','Rafael Espert Atienza'],
+    ['O2','Oro','Miguel Ángel Morán Torres','Enric Moran Mezquida'],
+    ['O3','Oro','Carlos Solera Iniesta','Hector Fuertes Estada'],
+    ['O4','Oro','Gabriel Guaita Sánchez','Daniel Miñana Carrascosa'],
+    ['O5','Oro','Valentín Parla Pintado','Bernardo Levia García'],
+    ['O6','Oro','Rafael Palmer','Joaquín Sánchez Sánchez'],
+    ['O7','Oro','Jose Vte. Cuenca Palmer','David Vicente Badia Ruiz'],
+    ['O8','Oro','Carlos Sánchez Tugores','Victor Amo Ferrer'],
+    ['O9','Oro','Salvador Perez','Javier Calabuig Vilanova'],
+    ['O10','Oro','Gabriel Zahonero Balaguer','Marcos Hernández Martinez'],
+    ['PA1','Plata A','Irene Barbancho Palmer','Cristina Elorriaga Ferrer'],
+    ['PA2','Plata A','Jose Manuel Agustina Perez','Guillermo Calipienso Martínez'],
+    ['PA3','Plata A','Vicente Alonso Galarza','Chimo Faubell Perelló'],
+    ['PA4','Plata A','Toni Valiente','Tomás Serrano'],
+    ['PA5','Plata A','Luciano Exequiel Bottaro Lopez','Pau Chinestra'],
+    ['PA6','Plata A','Jose Antonio Torres Vargas','José Valentín Sanjuan Nadal'],
+    ['PA7','Plata A','Eugenio Canto Gramage','Santiago Martínez Bernal'],
+    ['PA8','Plata A','José Enrique Vega Espert','Ulises Araujo Celda'],
+    ['PB1','Plata B','Paco Palmer Gimenez','Jose Vicente Cervera Gilabert'],
+    ['PB2','Plata B','Francisco Javier Cervera Mas','Juan Martínez Gálvez'],
+    ['PB3','Plata B','Beatriz Navarro Aranda','Francesc Campos Gadea'],
+    ['PB4','Plata B','Miguel Galán Ibañez','Vicente Perello Agustina'],
+    ['PB5','Plata B','Juan Jose Clemente Collado','Pauli Pérez'],
+    ['PB6','Plata B','Eduardo Garcia Carrascosa','Óscar Prieto Villar'],
+    ['PB7','Plata B','Juanes Gómez Restrepo','Nacho Masmano Montero'],
+    ['PB8','Plata B','David Zanon Estelles','Jesús Sánchez Tovar'],
+    ['B1','Bronce','Víctor Sánchez Corachán','David Santana Badia'],
+    ['B2','Bronce','Juan Fernando García Alarcón','Jesús Alvarado Gómez-Galdón'],
+    ['B3','Bronce','Isabel Iranzo','Inma'],
+    ['B4','Bronce','Mireia Alonso Calabuig','Mari Carmen Belda Hernández'],
+    ['B5','Bronce','Ángel Cuenca Carrascosa','Abel Cuenca Lacruz'],
+    ['B6','Bronce','Pablo Perez','Norjun Ortega Fuertes'],
+    ['B7','Bronce','Miguel Gallego Campos','Juan Carlos Bayona Cortina'],
+  ].map(([id,grupo,j1,j2]) => ({id,grupo,j1,j2}));
+  const mk = (id,iso,i,f,p,r) => ({id,iso,inicio:i,fin:f,pista:p,reserva:r||null});
+  return { grupos:['Oro','Plata A','Plata B','Bronce'], parejas:P, horarios:[
+    mk('H1','2026-11-03','18:30','20:00','Pista 1',{grupo:'Oro',p1:'O1',p2:'O3'}), // reserva de ejemplo
+    mk('H2','2026-11-03','18:30','20:00','Pista 3'),
+    mk('H3','2026-11-03','20:00','21:30','Pista 1'),
+    mk('H4','2026-11-03','20:00','21:30','Pista 3'),
+    mk('H5','2026-11-05','17:00','18:30','Pista 1'),
+    mk('H6','2026-11-05','17:00','18:30','Pista 3'),
+    mk('H7','2026-11-05','18:30','20:00','Pista 1'),
+    mk('H8','2026-11-05','18:30','20:00','Pista 3'),
+    mk('H9','2026-11-07','09:00','10:30','Pista 1'),
+    mk('H10','2026-11-07','09:00','10:30','Pista 3'),
+  ]};
+}
+
+async function cargar() {
+  if (!API_URL) {
+    estado = demo();
+    $('#demo').innerHTML = '<div class="aviso-demo">Modo demostración: los datos son de ejemplo. Configura <b>API_URL</b> para conectar con el Google Sheet.</div>';
+  } else {
+    try {
+      const r = await fetch(API_URL);
+      const data = await r.json();
+      if (!data.ok) throw new Error(data.error);
+      estado = data;
+    } catch (e) {
+      $('#lista').innerHTML = '<div class="vacio">No se han podido cargar los horarios. Recarga la página en un momento.</div>';
+      return;
+    }
+  }
+  const fg = $('#filtroGrupo');
+  if (fg.options.length === 1) fg.innerHTML += estado.grupos.map(g => `<option>${esc(g)}</option>`).join('');
+  pintar();
+}
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pareja = id => estado.parejas.find(p => p.id === id);
+const nombre = id => { const p = pareja(id); return p ? `${p.j1} / ${p.j2}` : id; };
+const claseGrupo = g => /oro/i.test(g) ? 'g-oro' : /plata/i.test(g) ? 'g-plata' : 'g-bronce';
+
+function nombreDia(iso) {
+  const [y,m,d] = iso.split('-').map(Number);
+  return { dia: DIAS[new Date(y,m-1,d).getDay()], fecha: d + ' de ' + MESES[m-1] };
+}
+function semana(iso) {
+  const [y,m,d] = iso.split('-').map(Number);
+  const f = new Date(y,m-1,d); f.setDate(f.getDate() - ((f.getDay()+6)%7));
+  return f.toDateString();
+}
+
+function pintar() {
+  const lista = estado.horarios.filter(h => {
+    if (filtro === 'libres' && h.reserva) return false;
+    if (filtro === 'ocupadas' && !h.reserva) return false;
+    if (filtroGrupo && h.reserva && h.reserva.grupo !== filtroGrupo) return false; // las libres siempre se ven
+    return true;
+  });
+  if (!lista.length) {
+    $('#lista').innerHTML = '<div class="vacio">' + (filtro === 'libres' ? 'No quedan pistas libres ahora mismo.' : 'No hay nada que mostrar.') + '</div>';
+    return;
+  }
+  let html = '', ultimo = '';
+  for (const h of lista) {
+    if (h.iso !== ultimo) {
+      const n = nombreDia(h.iso);
+      html += `<div class="dia">${n.dia}<span>${n.fecha}</span></div>`;
+      ultimo = h.iso;
+    }
+    const hora = `<div class="hora"><b>${esc(h.inicio)}</b><small>a ${esc(h.fin)}</small></div>`;
+    if (h.reserva) {
+      html += `<div class="slot">${hora}<div class="info">
+        <div class="top"><span class="pista">${esc(h.pista)}</span><span class="badge ${claseGrupo(h.reserva.grupo)}">${esc(h.reserva.grupo)}</span></div>
+        <div class="partido"><span class="pareja">${esc(nombre(h.reserva.p1))}</span><span class="vs">vs</span><span class="pareja">${esc(nombre(h.reserva.p2))}</span></div>
+      </div></div>`;
+    } else {
+      html += `<div class="slot">${hora}<div class="info"><div class="top"><span class="pista">${esc(h.pista)}</span></div>
+        <div class="estado">Libre</div></div><button class="btn" data-id="${esc(h.id)}">Reservar</button></div>`;
+    }
+  }
+  $('#lista').innerHTML = html;
+}
+
+// Parejas que ya juegan en la semana del horario elegido
+function ocupadasSemana() {
+  const sem = semana(actual.iso), s = new Set();
+  estado.horarios.forEach(h => { if (h.reserva && semana(h.iso) === sem) { s.add(h.reserva.p1); s.add(h.reserva.p2); } });
+  return s;
+}
+
+function rellenarSelects() {
+  const p1 = $('#p1'), p2 = $('#p2');
+  if (!grupoSel) return;
+  const ocup = ocupadasSemana();
+  const del = estado.parejas.filter(p => p.grupo === grupoSel);
+  const opt = (p, extraDisabled) => {
+    const ya = ocup.has(p.id);
+    return `<option value="${esc(p.id)}" ${ya || extraDisabled ? 'disabled' : ''}>${esc(p.j1)} / ${esc(p.j2)}${ya ? ' · ya juega esta semana' : ''}</option>`;
+  };
+  const v1 = p1.value, v2 = p2.value;
+  p1.disabled = p2.disabled = false;
+  p1.innerHTML = '<option value="">Pareja 1</option>' + del.map(p => opt(p, false)).join('');
+  p2.innerHTML = '<option value="">Pareja 2</option>' + del.map(p => opt(p, p.id === v1)).join('');
+  if (del.some(p => p.id === v1)) p1.value = v1;
+  if (del.some(p => p.id === v2) && v2 !== v1) p2.value = v2;
+}
+
+function abrir(id) {
+  actual = estado.horarios.find(h => h.id === id);
+  if (!actual) return;
+  const n = nombreDia(actual.iso);
+  $('#sub').textContent = `${n.dia[0].toUpperCase()+n.dia.slice(1)} ${n.fecha} · ${actual.inicio} - ${actual.fin} · ${actual.pista}`;
+  grupoSel = filtroGrupo || '';
+  $('#grupos').innerHTML = estado.grupos.map(g => `<button type="button" data-g="${esc(g)}" class="${g === grupoSel ? 'on' : ''}">${esc(g)}</button>`).join('');
+  $('#p1').innerHTML = $('#p2').innerHTML = '<option value="">Elige primero el grupo</option>';
+  $('#p1').disabled = $('#p2').disabled = true;
+  rellenarSelects();
+  $('#error').textContent = '';
+  $('#modal').classList.add('open');
+}
+function cerrar(){ $('#modal').classList.remove('open'); actual = null; }
+
+async function enviar(ev) {
+  ev.preventDefault();
+  const a = $('#p1').value, b = $('#p2').value;
+  if (!grupoSel) return $('#error').textContent = 'Elige el grupo.';
+  if (!a || !b) return $('#error').textContent = 'Elige las dos parejas.';
+  if (a === b) return $('#error').textContent = 'Tienen que ser dos parejas distintas.';
+  const ocup = ocupadasSemana();
+  for (const id of [a,b]) if (ocup.has(id)) return $('#error').textContent = `${nombre(id)} ya juega esa semana.`;
+
+  const btn = $('#enviar'); btn.disabled = true; btn.textContent = 'Reservando…';
+  try {
+    if (!API_URL) {
+      actual.reserva = { grupo: grupoSel, p1: a, p2: b };
+    } else {
+      const r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'reservar', horarioId: actual.id, pareja1: a, pareja2: b }) });
+      const data = await r.json();
+      if (!data.ok) { $('#error').textContent = data.error; await cargar(); return; }
+    }
+    cerrar(); toast();
+    if (API_URL) await cargar(); else pintar();
+  } catch (e) {
+    $('#error').textContent = 'No se ha podido conectar. Inténtalo otra vez.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Confirmar reserva';
+  }
+}
+
+function toast(){ const t=$('#toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+$('#lista').addEventListener('click', e => { const b = e.target.closest('button[data-id]'); if (b) abrir(b.dataset.id); });
+$('#grupos').addEventListener('click', e => {
+  const b = e.target.closest('button[data-g]'); if (!b) return;
+  grupoSel = b.dataset.g;
+  document.querySelectorAll('#grupos button').forEach(x => x.classList.toggle('on', x === b));
+  $('#p1').value = ''; $('#p2').value = '';
+  rellenarSelects(); $('#error').textContent = '';
+});
+$('#p1').addEventListener('change', () => { if ($('#p2').value === $('#p1').value) $('#p2').value = ''; rellenarSelects(); });
+$('#cancelar').addEventListener('click', cerrar);
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') cerrar(); });
+$('#form').addEventListener('submit', enviar);
+$('#filtroGrupo').addEventListener('change', e => { filtroGrupo = e.target.value; pintar(); });
+document.querySelectorAll('.filtros button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.filtros button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); filtro = b.dataset.f; pintar();
+}));
+cargar();
+setInterval(() => { if (API_URL && !actual) cargar(); }, 60000); // refresca cada minuto
+</script>
+</body>
+</html>
